@@ -1,0 +1,58 @@
+library(dplyr)
+###Require dplyr to help with filter data and mutations may need to install the package
+library(Lahman)
+###Require Lahman to gather data for baseball players
+
+Batting <- Batting
+###Get the data set Batting to show up in the Environment to the right 
+bat18 <- filter (Batting, yearID == 2018, AB > 100) %>%
+  mutate(X1B=H-X2B-X3B-HR,
+         FB=BB+HBP,
+         PA=AB+BB+HBP+SH+SF,
+         p1B=X1B/PA, p2B=p1B+(X2B/PA), p3B=p2B+(X3B/PA), 
+         pHR=p3B+(HR/PA), pFB=pHR+(FB/PA))  
+### Gives the players who had 100 At Bats in 2018, gives all the probabilty of how they get on base
+### FB stands for Free Base= Walks + HBP
+pa <- function(batterID="troutmi01", pitcherID=NA) {
+  x <- runif(1)
+  player <- filter(bat18, playerID==batterID)
+  outcome <- case_when(x<player$p1B~"1B",
+                       x<player$p2B~"2B",
+                       x<player$p3B~"3B",
+                       x<player$pHR~"HR",
+                       x<player$pFB~"FB",
+                       TRUE~"OUT")
+  outcome
+}
+##Sets up simulator
+
+pas <- rep(NA, 750)
+hits <- rep(NA, 750)
+onbase <- rep(NA,750)
+for(i in 1:750){
+  pas[i] <- pa("bellico01")
+  ##Any Player can be picked, I picked 2018 Cody Bellinger
+}
+###Calculate Average and Onbase Percentage
+hits <- pas %in% c("1B", "2B", "3B", "HR")
+onbase <- hits|(pas=="FB")
+tbs <- as.numeric(pas=="1B")+(pas=="2B")*2+(pas=="3B")*3+(pas=="HR")*4
+
+
+table(pas)
+AVG<- sum(hits)/(750-sum(pas=="FB"))
+AVG
+OBP <- sum(onbase/750)
+OBP
+SLG <- sum(tbs)/(750-sum(pas=="FB"))
+SLG
+OPS <- sum(OBP+SLG)
+OPS
+ISO <- sum(SLG-AVG)
+ISO
+
+AVG
+OBP
+SLG
+OPS
+ISO
