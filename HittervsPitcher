@@ -22,7 +22,7 @@ pitch18 <- filter(Pitching, yearID==2018, BFP>100)%>%
          pBH=(BH/PA), pHR=(HR/PA),
          pFB=(FB/PA), pK=(SO/PA))
 ### Gives the players who had 100 At Bats in 2018, gives all the probabilty of how they get on base
-###+ HBP
+### FB=BB+ HBP
 pa <- function(batterID="kendrho01", pitcherID="harriwi02") {
   x <- runif(1)
   batter <- filter(bat18, playerID==batterID)
@@ -57,7 +57,7 @@ hits <- rep(NA, 750)
 onbase <- rep(NA,750)
 for(i in 1:750){
   pas[i] <- pa("kendrho01")
-  ##Any Player can be picked, I picked 2018 Robinson Cano
+  ##Any Player can be picked, I picked 2018 Howie Kendrick
 }
 ###Calculate Average and Onbase Percentage
 hits <- pas %in% c("1B", "2B", "3B", "HR")
