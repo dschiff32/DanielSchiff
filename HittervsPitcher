@@ -1,0 +1,108 @@
+# DanielSchiff
+
+library(dplyr)
+###Require dplyr to help with filter data and mutations may need to install the package
+library(Lahman)
+###Require Lahman to gather data for baseball players
+
+Batting <- Batting
+###Get the data set Batting to show up in the Environment to the right 
+bat18 <- filter (Batting, yearID == 2018, AB > 100) %>%
+  mutate(X1B=H-X2B-X3B-HR,
+         FB=BB+HBP,
+         PA=AB+BB+HBP+SH+SF,
+         p1B=X1B/PA, p2B=(X2B/PA), p3B=(X3B/PA), 
+         pHR=(HR/PA), pFB=(FB/PA), pK=(SO/PA), pBH = p1B + p2B + p3B)
+
+Pitching <- Pitching
+pitch18 <- filter(Pitching, yearID==2018, BFP>100)%>%
+  mutate(BH=H-HR,
+         FB=BB+HBP,
+         PA=BFP,
+         pBH=(BH/PA), pHR=(HR/PA),
+         pFB=(FB/PA), pK=(SO/PA))
+### Gives the players who had 100 At Bats in 2018, gives all the probabilty of how they get on base
+###+ HBP
+pa <- function(batterID="kendrho01", pitcherID="harriwi02") {
+  x <- runif(1)
+  batter <- filter(bat18, playerID==batterID)
+  pitcher <- filter(pitch18,playerID==pitcherID)
+  n1 <- batter$PA
+  n2 <- pitcher$PA
+  n <- n1+n2
+  w1B <- pitcher$pBH/batter$pBH*batter$p1B
+  w2B <- pitcher$pBH/batter$pBH*batter$p2B
+  w3B <- pitcher$pBH/batter$pBH*batter$p3B
+  player <- rep(NA,6)
+  player[1] <- ((n1*batter$p1B)+(n2*w1B))/n
+  player[2] <- ((n1*batter$p2B)+(n2*w2B))/n
+  player[3] <- ((n1*batter$p3B)+(n2*w3B))/n
+  player[4] <- ((n1*batter$pHR)+(n2*pitcher$pHR))/n
+  player[5] <- ((n1*batter$pFB)+(n2*pitcher$pFB))/n
+  player[6] <- ((n1*batter$pK)+(n2*pitcher$pK))/n
+  plate <- cumsum(player)
+    outcome <- case_when(x<plate[1]~"1B",
+                         x<plate[2]~"2B",
+                         x<plate[3]~"3B",
+                         x<plate[4]~"HR",
+                         x<plate[5]~"FB",
+                         x<plate[6]~"K",
+                         TRUE~"OUT")
+  outcome
+}
+##Sets up simulator
+
+pas <- rep(NA, 750)
+hits <- rep(NA, 750)
+onbase <- rep(NA,750)
+for(i in 1:750){
+  pas[i] <- pa("kendrho01")
+  ##Any Player can be picked, I picked 2018 Robinson Cano
+}
+###Calculate Average and Onbase Percentage
+hits <- pas %in% c("1B", "2B", "3B", "HR")
+onbase <- hits|(pas=="FB")
+tbs <- as.numeric(pas=="1B")+(pas=="2B")*2+(pas=="3B")*3+(pas=="HR")*4
+fbs <- as.numeric(pas=="FB")
+KSO <- as.numeric(pas=="K")
+table(pas)
+AVG<- sum(hits)/(750-sum(pas=="FB"))
+AVG
+OBP <- sum(onbase/750)
+OBP
+SLG <- sum(tbs)/(750-sum(pas=="FB"))
+SLG
+OPS <- sum(OBP+SLG)
+OPS
+ISO <- sum(SLG-AVG)
+ISO
+TAB <- sum((tbs+fbs)/750)
+TAB
+KPCT <- sum(KSO/750)
+KPCT
+
+table(pas)
+AVG
+##hits/(PA-fbs)
+OBP
+##(hits+fbs)/PA
+SLG
+##(tbs)/(pas-fbs)
+OPS
+##(tbs/(pas-fbs))+(hits+fbs/PA)
+ISO
+##(tbs/(pas-fbs))-(hits/(PA-fbs))
+TAB
+##TAB is total bases + free bases divided by the amount of plate appearances
+##(tbs+fbs)/PA
+KPCT
+
+
+table(pas)
+AVG
+OBP
+SLG
+OPS
+ISO
+TAB
+KPCT
