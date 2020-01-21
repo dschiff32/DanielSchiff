@@ -1,6 +1,6 @@
 geom_zone <- function(){
   geom_rect(xmin=-.7083, xmax=.7083, ymin=1.5, ymax=3.25,
-  alpha=0,color="black", fill="maroon", size=1.5)
+  color="black", fill="maroon", size=1.5)
 }
 geom_edge <- function(){
   geom_rect(xmin=-1.2, xmax=1.2, ymin=1, ymax=3.75,
