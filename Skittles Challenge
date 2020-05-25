@@ -1,0 +1,57 @@
+#Code By Daniel Schiff
+#Set numerator and denominator using the assigned n and d
+require(dplyr)
+require(ggplot2)
+n <- 1
+d <- 4
+output <- NA
+#run a for loop to produce the probability that they will not kill you
+for(i in 1:97){
+  p <- n/d
+  n <- n+1
+  d <- d+1
+  #make it into a dataframe
+  out <- data.frame(p, n, d)
+  #combine the dataframe
+  output <- rbind(out, output)
+}
+
+#clean the data
+output <- filter(output, p >= 0)
+output <- mutate(output, n = n-1)
+output <- mutate(output, d = d-1)
+
+#set e to 1 because you havent eaten any yet
+e <- 1
+output1 <- NA
+
+#multiply all the expectancies together
+for(n in 1:97){
+  a <- output$p[n]
+  e <- a*e
+  out1 <- data.frame(e, n)
+  output1 <- rbind(out1, output1)
+}
+
+#clean the data
+output1 <- filter(output1, e > 0)
+output1 <- output1 %>% add_row(e = 1, n = 0)
+#make a graph because why not
+g <- ggplot(output1, aes(x = n, y = e)) + geom_point(color = "black", shape = 1, size = 2) + theme_classic() + scale_y_continuous(labels = scales::percent) +
+  geom_hline(aes(yintercept = .25), color = "navy") + geom_vline(aes(xintercept = 36), color = "navy") + 
+  geom_hline(aes(yintercept = .05), color = "red") + geom_vline(aes(xintercept = 63), color = "red") + 
+  geom_hline(aes(yintercept = .5), color = "green") + geom_vline(aes(xintercept = 20), color = "green") + 
+  xlab("Number of Skittles") + ylab("Probability of Survival") + 
+  labs(title = "Skittle Probability", subtitle = "By Daniel Schiff", 
+       caption = "Bored in the house and I'm in the house bored")
+g
+
+p36 <- choose(97,36)*choose(3, 0)/choose(100, 36)
+p63 <- choose(97,63)*choose(3, 0)/choose(100, 63)
+p97 <- choose(97,97)*choose(3, 0)/ choose(100, 97)
+1/p97
+
+
+df <- data.frame(eat = 1:97)%>%
+  mutate(prob = choose(97,eat)/choose(100,eat))
+ggplot(df, aes(x = eat, y = prob))+geom_line()
